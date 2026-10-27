@@ -1,0 +1,138 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../style.css"><script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script></head><body class="demo-body"><style>
+  #world-model-modes { color: var(--foreground); }
+  #world-model-modes .wm-flow { display: flex; align-items: center; gap: 16px; padding: 28px 0 20px; }
+  #world-model-modes .wm-stage { display: flex; flex: 1 1 0; min-width: 0; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+  #world-model-modes .wm-stage-name { font-weight: 500; }
+  #world-model-modes .wm-stage-symbol { display: flex; align-items: center; justify-content: center; min-height: 24px; color: var(--muted-foreground); }
+  #world-model-modes .wm-arrow { flex: 0 0 auto; color: var(--muted-foreground); }
+  #world-model-modes .wm-note { display: block; color: var(--muted-foreground); }
+  #world-model-modes .wm-return { display: flex; align-items: center; justify-content: center; gap: 8px; padding-bottom: 8px; color: var(--muted-foreground); }
+  #world-model-modes .wm-input { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; }
+  #world-model-modes .wm-loop-label { font-weight: 500; padding-top: 24px; }
+  @media (max-width: 560px) {
+    #world-model-modes .wm-flow { flex-direction: column; gap: 12px; padding: 20px 0 16px; }
+    #world-model-modes .wm-stage { flex: 0 0 auto; width: 100%; gap: 6px; }
+    #world-model-modes .wm-arrow { transform: rotate(90deg); }
+  }
+</style>
+<div id="world-model-modes" role="group" aria-label="三种视频能力的流程对比">
+  <div class="nav nav-pills" role="tablist" aria-label="视频能力">
+    <button class="nav-link active" id="wm-tab-continuation" role="tab" aria-label="Video continuation" aria-controls="wm-panel-continuation" aria-selected="true" type="button">Continue</button>
+    <button class="nav-link" id="wm-tab-action" role="tab" aria-label="Action conditioning" aria-controls="wm-panel-action" aria-selected="false" type="button">Action</button>
+    <button class="nav-link" id="wm-tab-loop" role="tab" aria-label="Closed-loop interaction" aria-controls="wm-panel-loop" aria-selected="false" type="button">Closed loop</button>
+  </div>
+  <div id="wm-panel-continuation" role="tabpanel" aria-labelledby="wm-tab-continuation">
+    <div class="wm-flow" role="img" aria-label="Video continuation：输入历史 frames，模型预测 future video。">
+      <div class="wm-stage">
+        <span class="wm-stage-symbol"><i data-lucide="film" aria-hidden="true"></i></span>
+        <span class="wm-stage-name">History frames</span>
+        <span class="text-small wm-note">小球正在滚动</span>
+      </div>
+      <span class="wm-arrow" aria-hidden="true">→</span>
+      <div class="wm-stage">
+        <span class="wm-stage-symbol"><i data-lucide="box" aria-hidden="true"></i></span>
+        <span class="wm-stage-name">Model prediction</span>
+      </div>
+      <span class="wm-arrow" aria-hidden="true">→</span>
+      <div class="wm-stage">
+        <span class="wm-stage-symbol"><i data-lucide="clapperboard" aria-hidden="true"></i></span>
+        <span class="wm-stage-name">Future video</span>
+        <span class="text-small wm-note">小球接着滚动</span>
+      </div>
+    </div>
+  </div>
+  <div id="wm-panel-action" role="tabpanel" aria-labelledby="wm-tab-action" hidden>
+    <div class="wm-flow" role="img" aria-label="Action-conditioned prediction：输入历史 frames 与放置挡板的 action，模型预测小球碰到挡板后的 future video。">
+      <div class="wm-stage">
+        <span class="wm-stage-symbol"><i data-lucide="film" aria-hidden="true"></i></span>
+        <span class="wm-input"><span class="wm-stage-name">History frames</span><span aria-hidden="true">＋</span><span class="wm-stage-name">Action</span></span>
+        <span class="text-small wm-note">放置挡板</span>
+      </div>
+      <span class="wm-arrow" aria-hidden="true">→</span>
+      <div class="wm-stage">
+        <span class="wm-stage-symbol"><i data-lucide="box" aria-hidden="true"></i></span>
+        <span class="wm-stage-name">Model prediction</span>
+      </div>
+      <span class="wm-arrow" aria-hidden="true">→</span>
+      <div class="wm-stage">
+        <span class="wm-stage-symbol"><i data-lucide="clapperboard" aria-hidden="true"></i></span>
+        <span class="wm-stage-name">Future video</span>
+        <span class="text-small wm-note">小球碰挡板后转向</span>
+      </div>
+    </div>
+  </div>
+  <div id="wm-panel-loop" role="tabpanel" aria-labelledby="wm-tab-loop" hidden>
+    <div class="wm-loop-label">Virtual generated world</div>
+    <div class="wm-flow" role="img" aria-label="虚拟生成世界：已有 history 与人或 policy 的 action 输入 world model，模型生成下一 observation，将它加入 history 后继续。">
+      <div class="wm-stage">
+        <span class="wm-stage-symbol"><i data-lucide="film" aria-hidden="true"></i></span>
+        <span class="wm-stage-name">History + action</span>
+        <span class="text-small wm-note">人 / policy 提供操作</span>
+      </div>
+      <span class="wm-arrow" aria-hidden="true">→</span>
+      <div class="wm-stage">
+        <span class="wm-stage-symbol"><i data-lucide="box" aria-hidden="true"></i></span>
+        <span class="wm-stage-name">World model</span>
+        <span class="text-small wm-note">生成下一段画面</span>
+      </div>
+      <span class="wm-arrow" aria-hidden="true">→</span>
+      <div class="wm-stage">
+        <span class="wm-stage-symbol"><i data-lucide="clapperboard" aria-hidden="true"></i></span>
+        <span class="wm-stage-name">Generated observation</span>
+        <span class="text-small wm-note">来源：模型输出</span>
+      </div>
+    </div>
+    <div class="wm-return text-small"><i data-lucide="corner-up-left" aria-hidden="true"></i><span>生成画面加入 history，接收下一次 action</span></div>
+    <hr>
+    <div class="wm-loop-label">Physical environment</div>
+    <div class="wm-flow" role="img" aria-label="真实环境：传感器观测用于 model-based planning，选出的 action 由真实执行器作用于外界，传感器重新测量，反馈新的 observation。">
+      <div class="wm-stage">
+        <span class="wm-stage-symbol"><i data-lucide="camera" aria-hidden="true"></i></span>
+        <span class="wm-stage-name">Sensor observation</span>
+        <span class="text-small wm-note">相机等传感器测量</span>
+      </div>
+      <span class="wm-arrow" aria-hidden="true">→</span>
+      <div class="wm-stage">
+        <span class="wm-stage-symbol"><i data-lucide="route" aria-hidden="true"></i></span>
+        <span class="wm-stage-name">Plan with model</span>
+        <span class="text-small wm-note">比较候选 action 的预测</span>
+      </div>
+      <span class="wm-arrow" aria-hidden="true">→</span>
+      <div class="wm-stage">
+        <span class="wm-stage-symbol"><i data-lucide="hand" aria-hidden="true"></i></span>
+        <span class="wm-stage-name">Execute action</span>
+        <span class="text-small wm-note">真实执行器</span>
+      </div>
+      <span class="wm-arrow" aria-hidden="true">→</span>
+      <div class="wm-stage">
+        <span class="wm-stage-symbol"><i data-lucide="globe" aria-hidden="true"></i></span>
+        <span class="wm-stage-name">Physical environment</span>
+        <span class="text-small wm-note">外界实际发生变化</span>
+      </div>
+    </div>
+    <div class="wm-return text-small"><i data-lucide="corner-up-left" aria-hidden="true"></i><span>传感器再次测量外界，得到 new observation</span></div>
+  </div>
+</div>
+
+<script>
+        if(window.lucide)lucide.createIcons();
+        document.querySelectorAll('[role="tablist"]').forEach(list => {
+          const tabs = [...list.querySelectorAll('[role="tab"]')];
+          function select(tab) {
+            tabs.forEach(item => {
+              const active = item === tab;
+              item.setAttribute('aria-selected', String(active));
+              item.classList.toggle('active', active);
+              item.tabIndex = active ? 0 : -1;
+              document.getElementById(item.getAttribute('aria-controls')).hidden = !active;
+            });
+          }
+          tabs.forEach((tab, i) => {
+            tab.addEventListener('click', () => select(tab));
+            tab.addEventListener('keydown', event => {
+              const offset = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+              if (offset) { event.preventDefault(); const next=tabs[(i+offset+tabs.length)%tabs.length]; select(next); next.focus(); }
+            });
+          });
+        });
+        </script></body></html>

@@ -1,0 +1,441 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../style.css"><script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script></head><body class="demo-body"><style>
+  #wm-timeline-v12 { color:var(--foreground); }
+  #wm-timeline-v12 .wm-legend { display:flex; flex-wrap:wrap; gap:10px 20px; padding:8px 0 24px; }
+  #wm-timeline-v12 .wm-key { display:flex; gap:8px; align-items:center; }
+  #wm-timeline-v12 .wm-dot { display:inline-block; flex:0 0 auto; width:9px; height:9px; border-radius:50%; background:var(--viz-series-1); }
+  #wm-timeline-v12 .wm-dot[data-category="video"] { background:var(--viz-series-2); }
+  #wm-timeline-v12 .wm-dot[data-category="world"] { background:var(--viz-series-3); }
+  #wm-timeline-v12 .wm-era { display:grid; grid-template-columns:80px minmax(0,1fr); gap:18px; position:relative; padding:0 0 28px; }
+  #wm-timeline-v12 .wm-era::before { content:""; position:absolute; left:4px; top:9px; bottom:-9px; width:1px; background:var(--border); }
+  #wm-timeline-v12 .wm-era:last-child::before { bottom:30px; }
+  #wm-timeline-v12 .wm-year { padding-left:18px; font-weight:500; position:relative; }
+  #wm-timeline-v12 .wm-year::before { content:""; position:absolute; left:0; top:6px; width:9px; height:9px; border-radius:50%; background:var(--foreground); }
+  #wm-timeline-v12 .wm-events { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; min-width:0; }
+  #wm-timeline-v12 .wm-lane { min-width:0; display:flex; flex-direction:column; gap:18px; }
+  #wm-timeline-v12 .wm-lane-heading { font-weight:500; }
+  #wm-timeline-v12 .wm-lane-mobile-label { display:none; }
+  #wm-timeline-v12 .wm-columns { display:grid; grid-template-columns:80px minmax(0,1fr) minmax(0,1fr); gap:18px; margin-bottom:20px; }
+  #wm-timeline-v12 .wm-event { min-width:0; overflow-wrap:anywhere; }
+  #wm-timeline-v12 .wm-date { display:flex; align-items:center; flex-wrap:wrap; gap:8px; color:var(--muted-foreground); margin-bottom:4px; }
+  #wm-timeline-v12 .wm-dots { display:inline-flex; align-items:center; gap:5px; }
+  #wm-timeline-v12 .wm-name { display:block; font-weight:500; }
+  #wm-timeline-v12 .wm-detail { display:block; color:var(--muted-foreground); margin-top:4px; }
+  @media(max-width:560px) {
+    #wm-timeline-v12 .wm-era { grid-template-columns:67px minmax(0,1fr); gap:12px; }
+    #wm-timeline-v12 .wm-events { grid-template-columns:1fr; gap:20px; }
+    #wm-timeline-v12 .wm-columns { display:none; }
+    #wm-timeline-v12 .wm-lane-mobile-label { display:block; font-weight:500; }
+    #wm-timeline-v12 .wm-lane-empty { display:none; }
+  }
+</style>
+<div id="wm-timeline-v12" role="group" aria-label="2015 至 2026 年 37 个 world model 代表工作的时间线。左列为 Control 与 representation 等工作，右列为 Video 相关工作。颜色小点标记研究方向，交叉工作显示两个小点。">
+  <div class="wm-legend">
+    <span class="wm-key"><span class="wm-dot" data-category="control" aria-hidden="true"></span>Control / representation</span>
+    <span class="wm-key"><span class="wm-dot" data-category="video" aria-hidden="true"></span>Video generation</span>
+    <span class="wm-key"><span class="wm-dot" data-category="world" aria-hidden="true"></span>Interactive / simulation</span>
+  </div>
+  <div class="wm-columns" aria-hidden="true"><span></span><span class="wm-lane-heading">Control / representation 等工作</span><span class="wm-lane-heading">Video 相关工作</span></div>
+  <div class="wm-eras"></div>
+</div>
+<script>
+(() => {
+  const root=document.getElementById('wm-timeline-v12');
+  const entries=[
+    [
+      "2015-07-31",
+      "Action-Conditional Video Prediction",
+      "根据 history 与 action 预测 Atari 经典游戏的后续画面，学习操作条件下的环境变化。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2017-04-07",
+      "Recurrent Environment Simulators",
+      "用 RNN 推进内部 state，支持数百步的 action-conditioned simulation。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2018-03-27",
+      "World Models",
+      "VAE 与 RNN 学习环境表示，并展示在模型模拟的环境中训练 controller。",
+      [
+        "control"
+      ]
+    ],
+    [
+      "2018-11-12",
+      "PlaNet",
+      "在 latent space 比较候选 action 的后果，用于从图像做 planning。",
+      [
+        "control"
+      ]
+    ],
+    [
+      "2019-03-01",
+      "SimPLe",
+      "用 action-conditioned video prediction 模拟 Atari，并在模型中训练 policy，减少真实交互需求。",
+      [
+        "video",
+        "control"
+      ]
+    ],
+    [
+      "2019-11-19",
+      "MuZero",
+      "学习 action 如何改变内部 state，并预测 reward 与 value，支持 tree search 选择行动。",
+      [
+        "control"
+      ]
+    ],
+    [
+      "2019-12-03",
+      "Dreamer",
+      "用 latent imagination 训练 policy，将想象的未来用于 behavior learning。",
+      [
+        "control"
+      ]
+    ],
+    [
+      "2020-10-05",
+      "DreamerV2",
+      "采用 discrete latent state 建模 Atari 游戏，在模型模拟的轨迹中学习 policy。",
+      [
+        "control"
+      ]
+    ],
+    [
+      "2022-09-01",
+      "IRIS",
+      "将游戏画面编码成 tokens，用 Transformer 模拟 action 后果，并在模型中训练 agent。",
+      [
+        "video",
+        "control"
+      ]
+    ],
+    [
+      "2023-01-10",
+      "DreamerV3",
+      "固定 learning rate、loss 权重等核心训练设置，在不同任务中分别训练 world model 与 policy。",
+      [
+        "control"
+      ]
+    ],
+    [
+      "2023-09-29",
+      "GAIA-1",
+      "根据历史视频、文字与车辆 action 生成后续驾驶场景，模拟不同操作下的可能未来。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2023-10-09",
+      "UniSim",
+      "根据指令或 control 生成交互后的画面，并用模拟经验训练可迁移到现实的 policies。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2023-10-25",
+      "TD-MPC2",
+      "在 latent world model 中优化 action sequences，支持跨任务的 continuous control。",
+      [
+        "control"
+      ]
+    ],
+    [
+      "2024-02-23",
+      "Genie",
+      "从无 action 标注的视频学出 latent actions，供用户控制后续画面。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2024-05-20",
+      "DIAMOND",
+      "以 pixel-space diffusion 预测画面，保留影响玩法的细节并用于 agent training。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2024-05-24",
+      "iVideoGPT",
+      "将 observations、actions 与 rewards 组织为 token sequence，用于交互预测、planning 和 agent training。",
+      [
+        "video",
+        "control"
+      ]
+    ],
+    [
+      "2024-07-01",
+      "Diffusion Forcing",
+      "为序列中各时间步分别设置 noise level，支持长时预测与 model-based planning。",
+      [
+        "video",
+        "control"
+      ]
+    ],
+    [
+      "2024-08-27",
+      "GameNGen",
+      "根据 history 与 action 预测经典 FPS 游戏 DOOM 的下一帧，实时模拟可玩的环境。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2024-10-31",
+      "Oasis",
+      "随用户操作实时生成 Minecraft 风格环境，展示由生成模型持续驱动的交互体验。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2024-11-07",
+      "DINO-WM",
+      "预测 action 后的 DINOv2 features，通过优化行动序列达到目标画面。",
+      [
+        "control"
+      ]
+    ],
+    [
+      "2024-12-04",
+      "Genie 2",
+      "从单图展开可键鼠控制的 3D 风格环境，同一起点可产生不同交互轨迹。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2025-01-07",
+      "Cosmos",
+      "面向 physical AI 的 world model 平台，提供预训练模型、video tokenizers 和数据处理工具。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2025-06-11",
+      "V-JEPA 2 / 2-AC",
+      "预测 future representations 来比较 action 后果，无需先生成 pixels。",
+      [
+        "control"
+      ]
+    ],
+    [
+      "2025-08-05",
+      "Genie 3",
+      "从 text 生成可实时探索的动态环境，推进响应速度与长期一致性。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2025-08-12",
+      "Matrix-Game 2.0",
+      "逐帧键鼠控制结合 few-step distillation，使长视频能随操作持续生成。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2025-09-29",
+      "Dreamer 4",
+      "从 offline data 学习可交互的 video world model，并在模型中训练完成 Minecraft 长程任务的 agent。",
+      [
+        "video",
+        "control"
+      ]
+    ],
+    [
+      "2025-11-12",
+      "PAN",
+      "用 autoregressive latent dynamics 预测行动后的状态，再由 video diffusion decoder 生成后续画面。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2025-12-16",
+      "WorldPlay",
+      "结合近期与几何相关的历史画面，兼顾实时生成和重访场景的一致性。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2026-02-06",
+      "Waymo World Model",
+      "将 Genie 3 适配到驾驶 simulation，根据驾驶操作生成 camera 与 lidar 数据，模拟不同选择的后果。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2026-02-06",
+      "DreamDojo",
+      "用 latent actions 从人类视频学习交互，再适配机器人数据，模拟操作后果并支持 policy evaluation 与 planning。",
+      [
+        "video",
+        "control"
+      ]
+    ],
+    [
+      "2026-06-01",
+      "Cosmos 3",
+      "统一理解与生成 language、video、audio 和 actions，服务多模态 world modeling。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2026-07-08",
+      "LingBot-World 2.0 / Infinity",
+      "用 causal pretraining 与 distillation 支持持续实时交互，扩展角色 actions 和文字控制的事件。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2026-09-01",
+      "Atlas",
+      "以 spatial context 与 camera trajectory 控制视频，连接空间重建与生成。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2026-09-03",
+      "GWM Worlds 2",
+      "用 text actions 与 camera control 持续操控角色、事件和同步视听生成。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2026-09-09",
+      "Programmable World Model",
+      "程序与 engine 维护 explicit state 和规则，video model 负责生成画面。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2026-10-12",
+      "StreamRender-H3",
+      "代码引擎维护 state、物理与规则，基于 MiniMax-H3 的两步 streaming diffusion 根据 semantic map、参考图与 prompt 持续生成画面。",
+      [
+        "video",
+        "world"
+      ]
+    ],
+    [
+      "2026-10-15",
+      "Matrix-Game 4.0",
+      "Game engine 维护玩法与物理，causal video model 丰富 low-poly 画面。",
+      [
+        "video",
+        "world"
+      ]
+    ]
+  ];
+  const pageLinks={
+    'Matrix-Game 4.0':'https://chatgpt.com/space/page_e21c5b8e20d481919920e3d789fc5a92',
+    'StreamRender-H3':'https://chatgpt.com/space/page_22f4dd66851c8191a98a4e46908ae20c'
+  };
+  const categoryNames={control:'Control / representation',video:'Video generation',world:'Interactive / simulation'};
+  const byYear=new Map();
+  for(const entry of entries) {
+    const year=entry[0].slice(0,4);
+    if(!byYear.has(year))byYear.set(year,[]);
+    byYear.get(year).push(entry);
+  }
+  const holder=root.querySelector('.wm-eras');
+  for(const [year,yearEntries] of byYear) {
+    const era=document.createElement('div');era.className='wm-era';
+    const label=document.createElement('div');label.className='wm-year';label.textContent=year;
+    const events=document.createElement('div');events.className='wm-events';
+    const left=document.createElement('div');left.className='wm-lane wm-left';
+    const right=document.createElement('div');right.className='wm-lane wm-right';
+    for(const [lane,labelText] of [[left,'Control / representation 等工作'],[right,'Video 相关工作']]) {
+      const label=document.createElement('span');label.className='wm-lane-mobile-label';label.textContent=labelText;lane.append(label);
+    }
+    for(const [date,name,detail,categories] of yearEntries) {
+      const event=document.createElement('article');event.className='wm-event';event.dataset.date=date;event.dataset.categories=categories.join(' ');
+      event.setAttribute('aria-label',name+'：'+categories.map(kind=>categoryNames[kind]).join('；'));
+      const dateLine=document.createElement('span');dateLine.className='wm-date text-small';
+      const dots=document.createElement('span');dots.className='wm-dots';dots.setAttribute('aria-hidden','true');
+      for(const kind of categories) {
+        const dot=document.createElement('span');dot.className='wm-dot';dot.dataset.category=kind;dots.append(dot);
+      }
+      const time=document.createElement('time');time.dateTime=date;time.textContent=date.slice(5);
+      if(name==='StreamRender-H3')time.setAttribute('data-tooltip','日期采用作者在 RAVEN 仓库的 2026-10-12 公告');
+      const title=document.createElement(pageLinks[name]?'a':'span');title.className='wm-name';title.textContent=name;
+      if(pageLinks[name]) {
+        title.href=pageLinks[name];
+        title.target='_blank';title.rel='noopener noreferrer';
+        title.setAttribute('aria-label',name+'：打开模型子页面');
+        title.style.textDecoration='underline';
+        title.style.textUnderlineOffset='3px';
+      }
+      dateLine.append(dots,time);event.append(dateLine,title);
+      const desc=document.createElement('span');desc.className='wm-detail text-small';desc.textContent=detail;
+      event.append(desc);
+      (categories.includes('video')?right:left).append(event);
+    }
+    if(left.children.length===1)left.classList.add('wm-lane-empty');
+    if(right.children.length===1)right.classList.add('wm-lane-empty');
+    events.append(left,right);era.append(label,events);holder.append(era);
+  }
+})();
+</script>
+
+<script>
+        if(window.lucide)lucide.createIcons();
+        document.querySelectorAll('[role="tablist"]').forEach(list => {
+          const tabs = [...list.querySelectorAll('[role="tab"]')];
+          function select(tab) {
+            tabs.forEach(item => {
+              const active = item === tab;
+              item.setAttribute('aria-selected', String(active));
+              item.classList.toggle('active', active);
+              item.tabIndex = active ? 0 : -1;
+              document.getElementById(item.getAttribute('aria-controls')).hidden = !active;
+            });
+          }
+          tabs.forEach((tab, i) => {
+            tab.addEventListener('click', () => select(tab));
+            tab.addEventListener('keydown', event => {
+              const offset = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+              if (offset) { event.preventDefault(); const next=tabs[(i+offset+tabs.length)%tabs.length]; select(next); next.focus(); }
+            });
+          });
+        });
+        </script></body></html>

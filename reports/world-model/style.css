@@ -1,4 +1,4 @@
-:root { --foreground:#202a37; --muted-foreground:#596579; --border:#dce2e9; --background:#fff; --primary:#285ab3; --primary-foreground:#fff; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif; color:var(--foreground); background:#fff; }
+:root { --foreground:#202a37; --muted-foreground:#596579; --border:#dce2e9; --background:#fff; --primary:#285ab3; --primary-foreground:#fff; --viz-series-1:#4169a8; --viz-series-2:#1b8068; --viz-series-3:#a05794; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif; color:var(--foreground); background:#fff; }
 * { box-sizing:border-box; }
 body { margin:0; line-height:1.85; }
 a { color:var(--primary); text-underline-offset:3px; overflow-wrap:anywhere; }
